@@ -10,6 +10,7 @@
     skript-reflect
 # API:  
  * ### Expression:
+    備註: key不能使用中文也不能使用大寫英文  
     #### Single Value
     > __Type: String, number(double), boolean__  
     ```
