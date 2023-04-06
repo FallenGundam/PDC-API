@@ -1,9 +1,9 @@
-# 簡單中毒效果
+# simple poison
 command /poison [<player>]:
   trigger:
     if arg-1 is set:
       set PDC value key "poison" of arg-1 to true
-      send "&c你中毒了" to arg-1
+      send "&5 You are poisoned now !" to arg-1
 every 1 second:
   loop all players:
     if PDC value key "poison" of loop-player is true:
