@@ -1,0 +1,117 @@
+import:
+	org.bukkit.NamespacedKey
+	org.bukkit.persistence.PersistentDataContainer
+	org.bukkit.persistence.PersistentDataType
+
+
+plural expression all (key|tag)[s] in (PersistentData|PDC) of %object%:
+	get:
+		loop ...expr-1.getPersistentDataContainer().getKeys():
+			add loop-value.toString().replace("skript:","") to {_l::*}
+		return {_l::*}
+	delete:
+		loop ...expr-1.getPersistentDataContainer().getKeys():
+			expr-1.getPersistentDataContainer().remove(loop-value)
+
+#> Single Value
+#> can use type: string , number(double) , boolean
+#>
+#> example:
+#> 	set PDC value key "attack_damage" of player to 10
+#> 	set PDC value key "god" of player to true
+#> 	delete PDC value key "attack_damage" of player
+expression (PersistentData|PDC) [single]value (key|tag) %string% of %object%:
+	return type: object
+	get:
+		set {_container} to expr-2.getPersistentDataContainer()
+		set {_list::*} to PersistentDataType.STRING and PersistentDataType.DOUBLE
+		loop {_list::*}:
+			if {_container}.has(new NamespacedKey("skript", expr-1), loop-value):
+				set {_returnvalue} to {_container}.get(new NamespacedKey("skript", expr-1),loop-value)
+				if {_returnvalue} contains "true" or "false":
+					return {_returnvalue} parsed as boolean
+				else:
+					return {_returnvalue}
+	set:
+		set {_boolean} to "%change value%".toLowerCase()
+		if {_boolean} contains "true" or "false":
+			set {_type} to PersistentDataType.STRING
+			set {_value} to {_boolean}
+		else if change value is instance of string:
+			set {_type} to PersistentDataType.STRING
+			set {_value} to change value
+		else:
+			set {_type} to PersistentDataType.DOUBLE
+			set {_value} to change value.doubleValue()
+		expr-2.getPersistentDataContainer().set(new NamespacedKey("skript", expr-1),{_type},{_value})
+	delete:
+		expr-2.getPersistentDataContainer().remove(new NamespacedKey("skript", expr-1))
+	
+#> Multiple value
+#> can use type: string , number(double)
+#>
+#> example:
+#> 	set {_effect::*} to "slow" , "curse" and "fire"
+#> 	set PDC Array key "effect_list" of player to {_effect::*}
+plural expression (PersistentData|PDC) (Array|list) (key|tag) %string% of %object%:
+	return type: objects
+	get:
+		set {_key} to new NamespacedKey("skript", "array-%expr-1%")
+		if expr-2.getPersistentDataContainer().has({_key},PersistentDataType.STRING):
+			set {_array_string} to expr-2.getPersistentDataContainer().get({_key},PersistentDataType.STRING)
+			set {_list::*} to {_array_string} split at "//"
+			loop {_list::*}:
+				set {_temp} to loop-value parsed as number
+				if {_temp} is set:
+					set {_list::%loop-index%} to {_temp}
+				else:
+					set {_list::%loop-index%} to loop-value
+			return {_list::*}
+	set:
+		set {_key} to new NamespacedKey("skript", "array-%expr-1%")
+		set {_array_string} to ""
+		loop change values:
+			set {_array_string} to "%{_array_string}%//%loop-value%"
+		set {_array_string} to {_array_string}.substring(2)
+		expr-2.getPersistentDataContainer().set({_key},PersistentDataType.STRING,{_array_string})
+	add:
+		set {_currentlist::*} to PersistentData Array key expr-1 of expr-2
+		add change values to {_currentlist::*}
+		set PersistentData Array key expr-1 of expr-2 to {_currentlist::*}
+	remove:
+		set {_currentlist::*} to PersistentData Array key expr-1 of expr-2
+		if {_currentlist::*} contains change values:
+			remove change values from {_currentlist::*}
+		set PersistentData Array key expr-1 of expr-2 to {_currentlist::*}
+	delete:
+		set {_key} to new NamespacedKey("skript", "array-%expr-1%")
+		if expr-2.getPersistentDataContainer().has({_key},PersistentDataType.STRING):
+			expr-2.getPersistentDataContainer().remove({_key})
+
+#ex
+on command "setdata":
+	
+
+	set PDC value key "test" of player to true
+	send "%PDC value key "test" of player%"
+
+	delete PDC value key "test" of player
+	# set {_list::*} to "1.5" , "12" and "123"
+	# set PersistentData Array key "test1" of player to {_list::*}
+	# set {_xxx::*} to PersistentData Array key "test1" of player
+	# send "%{_xxx::*}%"
+	# wait 1 seconds
+	# add "test1" to PersistentData Array key "test1" of player
+	# send "%PersistentData Array key "test1" of player%"
+	# wait 5 seconds
+	# delete PersistentData Array key "test1" of player
+	# send "%PersistentData Array key "test1" of player%"
+
+	# set PersistentData value key "attack-damage" of player to 100
+	# send "All PersistentData keys: %all key in PersistentData of player%"
+	# send "%PersistentData key "attack-damage" of player%"
+	# wait 5 seconds
+	# delete PersistentData key "attack-damage" of player
+	# send "%PersistentData key "attack-damage" of player%"
+
+
