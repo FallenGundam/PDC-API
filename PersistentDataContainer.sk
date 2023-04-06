@@ -88,30 +88,5 @@ plural expression (PersistentData|PDC) (Array|list) (key|tag) %string% of %objec
 		if expr-2.getPersistentDataContainer().has({_key},PersistentDataType.STRING):
 			expr-2.getPersistentDataContainer().remove({_key})
 
-#ex
-on command "setdata":
-	
-
-	set PDC value key "test" of player to true
-	send "%PDC value key "test" of player%"
-
-	delete PDC value key "test" of player
-	# set {_list::*} to "1.5" , "12" and "123"
-	# set PersistentData Array key "test1" of player to {_list::*}
-	# set {_xxx::*} to PersistentData Array key "test1" of player
-	# send "%{_xxx::*}%"
-	# wait 1 seconds
-	# add "test1" to PersistentData Array key "test1" of player
-	# send "%PersistentData Array key "test1" of player%"
-	# wait 5 seconds
-	# delete PersistentData Array key "test1" of player
-	# send "%PersistentData Array key "test1" of player%"
-
-	# set PersistentData value key "attack-damage" of player to 100
-	# send "All PersistentData keys: %all key in PersistentData of player%"
-	# send "%PersistentData key "attack-damage" of player%"
-	# wait 5 seconds
-	# delete PersistentData key "attack-damage" of player
-	# send "%PersistentData key "attack-damage" of player%"
 
 
