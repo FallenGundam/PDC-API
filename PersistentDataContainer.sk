@@ -4,6 +4,13 @@ import:
 	org.bukkit.persistence.PersistentDataType
 
 
+function object_hasPDC(obj:object,key:string) :: boolean:
+	set {_container} to {_obj}.getPersistentDataContainer()
+	set {_list::*} to PersistentDataType.STRING and PersistentDataType.DOUBLE
+	loop {_list::*}:
+		if {_container}.has(new NamespacedKey("skript", {_key}), loop-value):
+			return true
+	return false
 plural expression all (key|tag)[s] in (PersistentData|PDC) of %object%:
 	get:
 		loop ...expr-1.getPersistentDataContainer().getKeys():
