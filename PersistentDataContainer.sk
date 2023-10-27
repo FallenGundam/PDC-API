@@ -4,17 +4,14 @@ import:
 	org.bukkit.persistence.PersistentDataType
 
 
-function object_hasPDC(obj:object,key:string) :: boolean:
-	set {_container} to {_obj}.getPersistentDataContainer()
-	set {_list::*} to PersistentDataType.STRING and PersistentDataType.DOUBLE
-	loop {_list::*}:
-		if {_container}.has(new NamespacedKey("skript", {_key}), loop-value):
-			return true
-	return false
+
+
 plural expression all (key|tag)[s] in (PersistentData|PDC) of %object%:
+	return type: string
 	get:
 		loop ...expr-1.getPersistentDataContainer().getKeys():
-			add loop-value.toString().replace("skript:","") to {_l::*}
+			if loop-value.getNamespace() = "skript":
+				add loop-value.getKey() to {_l::*}
 		return {_l::*}
 	delete:
 		loop ...expr-1.getPersistentDataContainer().getKeys():
@@ -31,14 +28,16 @@ expression (PersistentData|PDC) [single]value (key|tag) %string% of %object%:
 	return type: object
 	get:
 		set {_container} to expr-2.getPersistentDataContainer()
+		set {_key} to new NamespacedKey("skript", expr-1.toLowerCase())
 		set {_list::*} to PersistentDataType.STRING and PersistentDataType.DOUBLE
 		loop {_list::*}:
-			if {_container}.has(new NamespacedKey("skript", expr-1), loop-value):
-				set {_returnvalue} to {_container}.get(new NamespacedKey("skript", expr-1),loop-value)
-				if {_returnvalue} contains "true" or "false":
+			if {_container}.has({_key}, loop-value):
+				set {_returnvalue} to {_container}.get({_key},loop-value)
+				if {_returnvalue} = "true" or "false":
 					return {_returnvalue} parsed as boolean
 				else:
 					return {_returnvalue}
+		return null
 	set:
 		set {_boolean} to "%change value%".toLowerCase()
 		if {_boolean} contains "true" or "false":
@@ -50,9 +49,9 @@ expression (PersistentData|PDC) [single]value (key|tag) %string% of %object%:
 		else:
 			set {_type} to PersistentDataType.DOUBLE
 			set {_value} to change value.doubleValue()
-		expr-2.getPersistentDataContainer().set(new NamespacedKey("skript", expr-1),{_type},{_value})
+		expr-2.getPersistentDataContainer().set(new NamespacedKey("skript", expr-1.toLowerCase()),{_type},{_value})
 	delete:
-		expr-2.getPersistentDataContainer().remove(new NamespacedKey("skript", expr-1))
+		expr-2.getPersistentDataContainer().remove(new NamespacedKey("skript", expr-1.toLowerCase()))
 	
 #> Multiple value
 #> can use type: string , number(double)
@@ -63,7 +62,7 @@ expression (PersistentData|PDC) [single]value (key|tag) %string% of %object%:
 plural expression (PersistentData|PDC) (Array|list) (key|tag) %string% of %object%:
 	return type: objects
 	get:
-		set {_key} to new NamespacedKey("skript", "array-%expr-1%")
+		set {_key} to new NamespacedKey("skript", "array-%expr-1%".toLowerCase())
 		if expr-2.getPersistentDataContainer().has({_key},PersistentDataType.STRING):
 			set {_array_string} to expr-2.getPersistentDataContainer().get({_key},PersistentDataType.STRING)
 			set {_list::*} to {_array_string} split at "//"
@@ -74,8 +73,9 @@ plural expression (PersistentData|PDC) (Array|list) (key|tag) %string% of %objec
 				else:
 					set {_list::%loop-index%} to loop-value
 			return {_list::*}
+		return null
 	set:
-		set {_key} to new NamespacedKey("skript", "array-%expr-1%")
+		set {_key} to new NamespacedKey("skript", "array-%expr-1%".toLowerCase())
 		set {_array_string} to ""
 		loop change values:
 			set {_array_string} to "%{_array_string}%//%loop-value%"
@@ -89,11 +89,10 @@ plural expression (PersistentData|PDC) (Array|list) (key|tag) %string% of %objec
 		set {_currentlist::*} to PersistentData Array key expr-1 of expr-2
 		if {_currentlist::*} contains change values:
 			remove change values from {_currentlist::*}
-		set PersistentData Array key expr-1 of expr-2 to {_currentlist::*}
+			set PersistentData Array key expr-1 of expr-2 to {_currentlist::*}
 	delete:
-		set {_key} to new NamespacedKey("skript", "array-%expr-1%")
+		set {_key} to new NamespacedKey("skript", "array-%expr-1%".toLowerCase())
 		if expr-2.getPersistentDataContainer().has({_key},PersistentDataType.STRING):
 			expr-2.getPersistentDataContainer().remove({_key})
-
 
 
